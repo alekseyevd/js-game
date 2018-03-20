@@ -25,6 +25,7 @@ class Actor {
 		this.size = size;
 		this.speed = speed;
 
+		// проверку корректности аргументов лучше перенести в начало функции
 		if(!(this.pos instanceof Vector)) {
 			throw new Error('Должен быть объект типа Vector');
 		}
@@ -64,6 +65,9 @@ class Actor {
 			return false;
 		}
 
+		// Фигурные скобки у if лучше не опускать
+		// Вам при проверке скажут, что это можно заменить на один if, но я считаю, что так лучше читается :)
+		// так что если хотите - оставьте и ссылайтесь на меня
 		if (this.top >= newActor.bottom) return false;
 		if (this.bottom <= newActor.top) return false;
 		if (this.right <= newActor.left) return false;
@@ -75,20 +79,27 @@ class Actor {
 
 class Level {
 	constructor(grid = [], actors = []) {
+		// лучше создать копии массивов, чтобы нельзя было поменять поля объекта извне
 		this.grid = grid;
 		this.actors = actors;
+		// тут лучше использовать стрелочную функцию
 		this.player = this.actors.find(function(actor) {
+			// всегда используйте === или !==
 			return actor.type == "player";
 		});
 		this.status = null;
 		this.finishDelay = 1;
 		this.height = this.grid.length;
+		// Math.max.apply(Math, args) можно заменить на Math.max(...args)
+		// в map лучше передать стрелочную фукнцию (короче)
+		// и чтобы не проверять длину 0 можно просто добавить в список аргуметов передаваемых в метод max
 		this.width = this.height > 0 ? Math.max.apply(Math, this.grid.map(function(el) {
 			return el.length;
 		})) : 0;
 	}
 
 	isFinished() {
+		// тут лучше написать просто return ...
 		if (this.status !== null && this.finishDelay < 0) {
 			return true;
 		}
@@ -99,10 +110,14 @@ class Level {
 		if (!(newActor instanceof Actor)) {
 			throw new Error(' Обязательный аргумент — только движущийся объект типа Actor');
 		}
+
+		// используйте метод find массива
 		for (let actor of this.actors) {
 				if (actor.isIntersect(newActor))
 				return actor;
 			}
+
+		// лишняя строчка
 		return undefined;
 	}
 
@@ -111,6 +126,7 @@ class Level {
 			throw new Error('Должен быть объект типа Vector');
 		}
 
+		// если значение переменной присываивается один раз, то нужно использовать const
 		let xStart = Math.floor(position.x);
 		let xEnd = Math.ceil(position.x + size.x);
 		let yStart = Math.floor(position.y);
@@ -124,6 +140,7 @@ class Level {
 			return 'lava';
 		}
 
+		// для объявления переменных нужно использовать let или const
 	for (var y = yStart; y < yEnd; y++) {
 		for (var x = xStart; x < xEnd; x++) {
 				var obstacle = this.grid[y][x];
@@ -135,6 +152,7 @@ class Level {
 	}
 
 	removeActor(newActor) {
+		// var не используем
 		for (var i = 0; i < this.actors.length; i++) {
 			if(this.actors[i] === newActor) {
 				this.actors.splice(i, 1); 
@@ -143,10 +161,12 @@ class Level {
 	}
 
 	noMoreActors(typeOfActor) {
+		// внешние скобки можно опустить
 		return !(this.actors.some(actor => actor.type === typeOfActor));
 	}
 
 	playerTouched(typeString, actorTouch) {
+		// что тут имелось в виду? зачем этот if?
 		if(this.status !== null) { }
 
 		if (typeString === 'lava' || typeString === 'fireball') {
@@ -157,6 +177,7 @@ class Level {
 			this.removeActor(actorTouch);
 			if(this.noMoreActors('coin')) {
 				this.status = 'won';
+				// finishDelay не нужно трогать тут
 				this.finishDelay = 1;
 			}
 		}
@@ -170,6 +191,7 @@ class LevelParser	{
 	}
 
 	actorFromSymbol(symbol) {
+		// все проверки лишние
 		if (symbol === undefined) {
 			return undefined;
 		}
@@ -185,12 +207,14 @@ class LevelParser	{
 		} else if(symbol === '!') {
 			return 'lava';
 		} else {
+			// лишняя строчка
 			return undefined;
 		}
 	}
 
 	createGrid(plan) { 
-		let arrays = []; 
+		let arrays = [];
+		// можно записать короче если исопльзовать map 2 раза
 		if (plan.length === 0) {
 			return arrays;
 		} else {
@@ -204,9 +228,11 @@ class LevelParser	{
 
 	createActors(plan) {
 		const actors = [];
+		// целостность объекта лучше проверять в конструкторе
 		if (this.dictionary) {
 			plan.forEach((string, y) => {
 				string.split('').forEach((symbol, x) => {
+					// actorFromSymbol
 					if (typeof(this.dictionary[symbol]) === 'function') {
 						const actor = new this.dictionary[symbol](new Vector(x, y));
 						if (actor instanceof Actor) {
@@ -225,6 +251,8 @@ class LevelParser	{
 }
 
 class Fireball extends Actor {
+	// не используйте констуруктор Vector без аргументов,
+	// кто то может поменять его реализацию и по-умолчанию станет 1,1 а не 0,0
 	constructor(pos = new Vector(), speed = new Vector()) {
 		super(pos, new Vector(1, 1), speed);
 	}
@@ -232,6 +260,7 @@ class Fireball extends Actor {
 		return 'fireball';
 	}
 	getNextPosition(time = 1) {
+		// тут лучше использовать методы класса Vector
 		return new Vector(this.pos.x + this.speed.x * time, this.pos.y + this.speed.y * time);
 	}
 	handleObstacle() {
@@ -262,6 +291,8 @@ class VerticalFireball extends Fireball {
 class FireRain extends Fireball {
 		constructor(coords) {
 			super(coords);
+			// не нужно мутировать объекты Vector
+			// speed должно задаваться через вызов конструктора базового класса
 			this.speed.y = 3;
 			this.startPos = coords;
 		}
@@ -303,6 +334,7 @@ class Coin extends Actor {
 class Player extends Actor {
 	constructor(pos = new Vector(0, 0)) {
 		super(pos, new Vector(0.8, 1.5), new Vector(0, 0));
+		// не нужно мутировать объект, pos должно задаваться через вызов конструктора базового класса
 		this.pos.y -= 0.5;
 	}
 	get type() {
