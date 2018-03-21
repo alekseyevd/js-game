@@ -74,7 +74,6 @@ class Actor {
 
 class Level {
 	constructor(grid = [], actors = []) {
-		// лучше создать копии массивов, чтобы нельзя было поменять поля объекта извне
 		this.grid = grid;
 		this.actors = actors;
 		this.player = actors.find(el => el.type === 'player');
