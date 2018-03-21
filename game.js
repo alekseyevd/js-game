@@ -5,15 +5,12 @@ class Vector {
 		this.x = x;
 		this.y = y;
 	}
-
 	plus(newVector) {
 		if (!(newVector instanceof Vector)) {
 			throw new Error ('Можно прибавлять к вектору только вектор типа Vector');
 		}
-
 		return new Vector(this.x + newVector.x, this.y + newVector.y);
 	}
-
  	times(factor) {
  		return new Vector(this.x * factor, this.y * factor);
  	}
@@ -113,19 +110,18 @@ class Level {
 			return 'lava';
 		}
 
-	for (let y = yStart; y < yEnd; y++) {
-		for (let x = xStart; x < xEnd; x++) {
-				if (this.grid[y][x]) 
-					return this.grid[y][x]; 
+		for (let y = yStart; y < yEnd; y++) {
+			for (let x = xStart; x < xEnd; x++) {
+					if (this.grid[y][x]) 
+						return this.grid[y][x]; 
+				}
 			}
-		}
 	}
 
 	removeActor(newActor) {
-		for (let i = 0; i < this.actors.length; i++) {
-			if(this.actors[i] === newActor) {
-				this.actors.splice(i, 1); 
-			}
+		let index = this.actors.findIndex((el) => el === newActor);
+		if (index !== -1) {
+			this.actors.splice(index, 1);
 		}
 	}
 
@@ -149,7 +145,6 @@ class Level {
 			}
 		}
 	}
-
 }
 
 class LevelParser	{
@@ -158,19 +153,14 @@ class LevelParser	{
 	}
 
 	actorFromSymbol(symbol) {
-		if (symbol === undefined) {
-			return undefined;
-		}
-		if (symbol in this.dictionary) {
-			return this.dictionary[symbol];
-		}
-		return undefined;
+		return this.dictionary[symbol];
 	}
 
 	obstacleFromSymbol(symbol) {
 		if(symbol === 'x') {
 			return 'wall';
-		} else if(symbol === '!') {
+		} 
+		if(symbol === '!') {
 			return 'lava';
 		} 
 	}
@@ -188,7 +178,7 @@ class LevelParser	{
 		if (this.dictionary) {
 			plan.forEach((string, y) => {
 				string.split('').forEach((symbol, x) => {
-					let actor = this.actorFromSymbol(symbol);
+					const actor = this.actorFromSymbol(symbol);
 					if (typeof(actor) === 'function') {
 						let newActor = new actor(new Vector(x, y));
 						if (newActor instanceof Actor) {
@@ -246,7 +236,6 @@ class FireRain extends Fireball {
 			super(coords, new Vector(0, 3));
 			this.startPos = coords;
 		}
-
 		handleObstacle() {
 				this.pos = this.startPos;
 		}
