@@ -158,7 +158,6 @@ class LevelParser	{
 	}
 
 	actorFromSymbol(symbol) {
-		// все проверки лишние
 		if (symbol === undefined) {
 			return undefined;
 		}
@@ -186,15 +185,14 @@ class LevelParser	{
 
 	createActors(plan) {
 		const actors = [];
-		// целостность объекта лучше проверять в конструкторе
 		if (this.dictionary) {
 			plan.forEach((string, y) => {
 				string.split('').forEach((symbol, x) => {
-					// actorFromSymbol
-					if (typeof(this.dictionary[symbol]) === 'function') {
-						const actor = new this.dictionary[symbol](new Vector(x, y));
-						if (actor instanceof Actor) {
-							actors.push(actor);
+					let actor = this.actorFromSymbol(symbol);
+					if (typeof(actor) === 'function') {
+						let newActor = new actor(new Vector(x, y));
+						if (newActor instanceof Actor) {
+							actors.push(newActor);
 						}
 					}
 				});
